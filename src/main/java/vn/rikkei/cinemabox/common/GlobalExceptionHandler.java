@@ -85,7 +85,6 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.METHOD_NOT_ALLOWED, "METHOD_NOT_ALLOWED", ex.getMessage(), req, List.of());
     }
 
-    /** Lưới an toàn cuối cùng: lỗi chưa được xử lý riêng sẽ thành 500. */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleOther(Exception ex, HttpServletRequest req) {
         log.error("Lỗi chưa xử lý tại {}", req.getRequestURI(), ex);

@@ -3,7 +3,6 @@ package vn.rikkei.cinemabox.common;
 import java.util.List;
 import org.springframework.data.domain.Page;
 
-/** Khung trả về cho danh sách có phân trang. */
 public record PageResponse<T>(
         List<T> content,
         int page,
