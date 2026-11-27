@@ -1,31 +1,26 @@
 package vn.rikkei.cinemabox.showtime.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.*;
+import java.time.LocalDateTime;
 import vn.rikkei.cinemabox.showtime.Showtime;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter @Setter @Builder
-public class ShowtimeResponse {
-    private Long id;
-    private String movieTitle;
-    private String roomName;
+public record ShowtimeResponse(
+        Long id,
+        String movieTitle,
+        String roomName,
+        @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+        LocalDateTime startTime,
+        Long price,
+        Integer availableSeats) {
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    private String startTime;
-
-    private Long price;
-    private Integer availableSeats;
-
-    public static ShowtimeResponse fromEntity(Showtime showtime) {
-        return ShowtimeResponse.builder()
-                .id(showtime.getId())
-                .movieTitle(showtime.getMovie().getTitle())
-                .roomName(showtime.getRoom().getName())
-                .startTime(showtime.getStartTime().toString())
-                .price(showtime.getPrice())
-                .availableSeats(showtime.getAvailableSeats())
-                .build();
+    public static ShowtimeResponse from(Showtime s) {
+        return new ShowtimeResponse(
+                s.getId(),
+                s.getMovie().getTitle(),
+                s.getRoom().getName(),
+                s.getStartTime(),
+                s.getPrice(),
+                s.getAvailableSeats()
+        );
     }
 }

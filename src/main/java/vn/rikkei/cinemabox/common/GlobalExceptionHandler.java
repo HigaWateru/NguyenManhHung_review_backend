@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+import vn.rikkei.cinemabox.payment.PaymentFailedException;
 
 /**
  * Xử lý lỗi tập trung: chuyển exception thành ApiError.
@@ -36,6 +37,49 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.NOT_FOUND, "NOT_FOUND", "Không có endpoint " + req.getRequestURI(), req, List.of());
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest req) {
+        List<ApiError.FieldViolation> details = ex.getBindingResult().getFieldErrors().stream()
+                .map(err -> new ApiError.FieldViolation(err.getField(), err.getDefaultMessage()))
+                .toList();
+        return build(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", "Dữ liệu đầu vào không hợp lệ", req, details);
+    }
+
+    @ExceptionHandler({
+            BadRequestException.class,
+            HttpMessageNotReadableException.class,
+            MethodArgumentTypeMismatchException.class,
+            MissingServletRequestParameterException.class
+    })
+    public ResponseEntity<ApiError> handleBadRequest(Exception ex, HttpServletRequest req) {
+        return build(HttpStatus.BAD_REQUEST, "BAD_REQUEST", ex.getMessage(), req, List.of());
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ApiError> handleConflict(ConflictException ex, HttpServletRequest req) {
+        return build(HttpStatus.CONFLICT, "CONFLICT", ex.getMessage(), req, List.of());
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiError> handleDataIntegrity(DataIntegrityViolationException ex, HttpServletRequest req) {
+        return build(HttpStatus.CONFLICT, "CONFLICT", "Dữ liệu bị trùng lặp hoặc vi phạm ràng buộc", req, List.of());
+    }
+
+    @ExceptionHandler(NotEnoughSeatsException.class)
+    public ResponseEntity<ApiError> handleNotEnoughSeats(NotEnoughSeatsException ex, HttpServletRequest req) {
+        return build(HttpStatus.CONFLICT, "NOT_ENOUGH_SEATS", ex.getMessage(), req, List.of());
+    }
+
+    @ExceptionHandler(InvalidStateException.class)
+    public ResponseEntity<ApiError> handleInvalidState(InvalidStateException ex, HttpServletRequest req) {
+        return build(HttpStatus.CONFLICT, "INVALID_STATE", ex.getMessage(), req, List.of());
+    }
+
+    @ExceptionHandler(PaymentFailedException.class)
+    public ResponseEntity<ApiError> handlePaymentFailed(PaymentFailedException ex, HttpServletRequest req) {
+        return build(HttpStatus.PAYMENT_REQUIRED, "PAYMENT_FAILED", ex.getMessage(), req, List.of());
+    }
+
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ApiError> handleMethod(HttpRequestMethodNotSupportedException ex, HttpServletRequest req) {
         return build(HttpStatus.METHOD_NOT_ALLOWED, "METHOD_NOT_ALLOWED", ex.getMessage(), req, List.of());
@@ -52,33 +96,5 @@ public class GlobalExceptionHandler {
                                              HttpServletRequest req, List<ApiError.FieldViolation> details) {
         ApiError body = ApiError.of(status.value(), error, message, req.getRequestURI(), details);
         return ResponseEntity.status(status).body(body);
-    }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest req) {
-        List<ApiError.FieldViolation> details = ex.getBindingResult().getFieldErrors().stream()
-            .map(err -> new ApiError.FieldViolation(err.getField(), err.getDefaultMessage()))
-            .toList();
-        return build(HttpStatus.BAD_REQUEST, "VALIDATION_FAILED", "Dữ liệu đầu vào không hợp lệ", req, details);
-    }
-
-    @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<ApiError> handleConflict(ConflictException ex, HttpServletRequest req) {
-        return build(HttpStatus.CONFLICT, "CONFLICT", ex.getMessage(), req, List.of());
-    }
-
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ApiError> handleDataIntegrity(DataIntegrityViolationException ex, HttpServletRequest req) {
-        return build(HttpStatus.CONFLICT, "CONFLICT", "Dữ liệu bị trùng lặp hoặc vi phạm ràng buộc", req, List.of());
-    }
-
-    @ExceptionHandler({
-        BadRequestException.class,
-        HttpMessageNotReadableException.class,
-        MethodArgumentTypeMismatchException.class,
-        MissingServletRequestParameterException.class
-    })
-    public ResponseEntity<ApiError> handleBadRequest(Exception ex, HttpServletRequest req) {
-        return build(HttpStatus.BAD_REQUEST, "BAD_REQUEST", ex.getMessage(), req, List.of());
     }
 }

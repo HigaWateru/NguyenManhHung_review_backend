@@ -26,16 +26,16 @@ public class CustomerService {
 
     @Transactional
     public CustomerResponse create(CreateCustomerRequest req) {
-        String email = req.getEmail().trim();
+        String email = req.email().trim();
         if (customerRepository.existsByEmail(email)) {
             throw new ConflictException("Email đã tồn tại: " + email);
         }
 
         Customer customer = new Customer();
-        customer.setFullName(req.getFullName().trim());
+        customer.setFullName(req.fullName().trim());
         customer.setEmail(email);
-        customer.setPhone(req.getPhone().trim());
-        customer.setMemberLevel(req.getMemberLevel() == null ? "STANDARD" : req.getMemberLevel().trim());
+        customer.setPhone(req.phone());
+        customer.setMemberLevel(req.memberLevel() == null ? "STANDARD" : req.memberLevel());
 
         Customer saved = customerRepository.save(customer);
         return CustomerResponse.from(saved);
@@ -43,7 +43,7 @@ public class CustomerService {
 
     public CustomerResponse getById(Long id) {
         Customer customer = customerRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khách hàng id=" + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khách hàng id=" + id));
         return CustomerResponse.from(customer);
     }
 
@@ -56,7 +56,7 @@ public class CustomerService {
         }
 
         Page<Customer> result = customerRepository.findAll(
-            PageRequest.of(page, size, Sort.by("id").ascending())
+                PageRequest.of(page, size, Sort.by("id").ascending())
         );
         return PageResponse.from(result.map(CustomerResponse::from));
     }

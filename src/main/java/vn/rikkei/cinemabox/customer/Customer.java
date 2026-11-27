@@ -1,6 +1,5 @@
 package vn.rikkei.cinemabox.customer;
 
-import com.fasterxml.jackson.databind.deser.impl.CreatorCandidate;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -8,18 +7,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import lombok.*;
-
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "customers")
-
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-@Setter
-@Builder
 public class Customer {
 
     @Id
